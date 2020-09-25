@@ -1,0 +1,74 @@
+steps:
+  - task: NodeTool@0
+    displayName: 'Use Node 12.x'
+    inputs:
+      versionSpec: 12.x
+  - script: |
+      npm ci
+    displayName: 'Install project dependencies'
+  - script: |
+      npm run cypress-verify
+    displayName: 'Verify if Cypress can be executed'
+  - bash: |
+      CMD=""
+      if [ ${{ parameters.browserType }} == "chrome" ]
+      then
+        RUNCMD="$CMD npm run start-chrome"
+      fi
+      if [ ${{ parameters.browserType }} == "firefox" ]
+      then
+        RUNCMD="$CMD npm run start-firefox"
+      fi
+      if [ ${{ parameters.browserType }} == "edge" ]
+      then
+        RUNCMD="$CMD npm run start-edge"
+      fi
+      eval $RUNCMD
+    displayName: 'Run the cypress tests'
+  # - bash: |
+  #     # Check if verbose mode needs to be turned on
+  #     CMD=""
+  #     if [ "$VERBOSE" == "true" ]
+  #     then
+  #       CMD="$CMD DEBUG=cypress:*"
+  #     fi
+  #     VERIFY_CMD="$CMD ./node_modules/.bin/cypress verify"
+  #     RUN_CMD="$CMD npm start --browser ${{ parameters.browserType }}"
+  #     # Check if Cypress record information is provided
+  #     if [ ! -z "$CYPRESS_RECORD_KEY" ]
+  #     then
+  #       # Record key was set
+  #       RUN_CMD="$RUN_CMD --record --parallel --group \"${{ parameters.browserType }}\" --ci-build-id $BUILDID"
+  #     fi
+  #     eval $VERIFY_CMD
+  #     eval $RUN_CMD
+    # displayName: 'Run the cypress tests'
+    # env:
+    #   TERM: xterm # Avoid terminal warnings
+    #   VERBOSE: $(verbose)
+    #   BUILDID: $(Build.BuildId)
+    #   ${{ if ne(variables['cypress_record_key'], '') }}:
+    #     CYPRESS_RECORD_KEY: $(cypress_record_key)
+  
+  - task: PublishTestResults@2
+    displayName: 'Publish the test reports'
+    inputs:
+      testResultsFiles: '**/junit-result.xml'
+    condition: succeededOrFailed()
+    continueOnError: true
+
+  - task: PublishPipelineArtifact@0
+    displayName: 'Publish screenshots when there were issues'
+    inputs:
+      targetPath: 'cypress/screenshots'
+      artifactName: screenshots-${{ parameters.browserType }}
+    condition: failed()
+    continueOnError: true
+
+  - task: PublishPipelineArtifact@0
+    displayName: 'Publish videos'
+    inputs:
+      targetPath: 'cypress/videos'
+      artifactName: videos-${{ parameters.browserType }}
+    condition: succeededOrFailed()
+    continueOnError: true
