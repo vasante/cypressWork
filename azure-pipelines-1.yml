@@ -49,14 +49,4 @@ steps:
   # avoid warnings about terminal
     TERM: xterm
 
-- task: Npm@1
-  inputs:
-    command: 'custom'
-    customCommand: 'run test'
-
-- task: Npm@1
-  inputs:
-    command: 'custom'
-    customCommand: 'run build'
-  displayName: 'test'
 
