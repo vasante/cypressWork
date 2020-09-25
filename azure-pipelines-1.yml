@@ -21,7 +21,7 @@ steps:
 - task: Npm@1
   inputs:
     command: 'custom'
-    customCommand: 'run test:e2e-pipeline'
+    customCommand: 'run test'
 
 - task: Npm@1
   inputs:
