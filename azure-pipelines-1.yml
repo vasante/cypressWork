@@ -22,6 +22,11 @@ steps:
   inputs:
     command: 'custom'
     customCommand: 'run test'
+- task: Npm@1
+  inputs:
+    command: 'custom'
+    customCommand: 'run build'
+  displayName : "Build"
  
 - task: PublishTestResults@2
   inputs:
